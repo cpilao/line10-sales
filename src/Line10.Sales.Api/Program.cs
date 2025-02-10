@@ -40,3 +40,5 @@ app.UseHttpsRedirection();
 app.AddCustomerEndpoints();
 
 app.Run();
+
+public partial class Program;

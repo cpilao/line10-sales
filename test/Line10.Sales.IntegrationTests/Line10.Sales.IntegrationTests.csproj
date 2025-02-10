@@ -7,9 +7,11 @@
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
+        <PreserveCompilationContext>true</PreserveCompilationContext>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.12" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0"/>
         <PackageReference Include="Shouldly" Version="4.3.0" />
         <PackageReference Include="Testcontainers.MsSql" Version="4.1.0" />
@@ -26,6 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\src\Line10.Sales.Api\Line10.Sales.Api.csproj" />
       <ProjectReference Include="..\..\src\Line10.Sales.Infrastructure\Line10.Sales.Infrastructure.csproj" />
     </ItemGroup>
 
