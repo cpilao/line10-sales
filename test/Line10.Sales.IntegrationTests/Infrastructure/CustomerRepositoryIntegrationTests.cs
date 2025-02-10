@@ -13,7 +13,7 @@ public class CustomerRepositoryIntegrationTests : IClassFixture<IntegrationDataT
     }
 
     [Fact]
-    public async Task AddCustomer_ShouldAddCustomerToDatabase()
+    public async Task AddCustomer_Should_AddCustomerToDatabase()
     {
         // Arrange
         var customer = Customer
@@ -34,7 +34,7 @@ public class CustomerRepositoryIntegrationTests : IClassFixture<IntegrationDataT
     }
     
     [Fact]
-    public async Task UpdateCustomer_ShouldUpdateCustomerToDatabase()
+    public async Task UpdateCustomer_Should_UpdateCustomerToDatabase()
     {
         // Arrange
         var customer = Customer
@@ -60,7 +60,7 @@ public class CustomerRepositoryIntegrationTests : IClassFixture<IntegrationDataT
     }
 
     [Fact]
-    public async Task DeleteCustomer_ShouldRemoveCustomerFromDatabase()
+    public async Task DeleteCustomer_Should_RemoveCustomerFromDatabase()
     {
         // Arrange
         var customer = Customer

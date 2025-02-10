@@ -25,7 +25,7 @@ public class Order: BaseEntity
         CustomerId = customerId;
         ProductId = productId;
         Status = OrderStatus.Pending;
-        CreateDate = DateTime.Now;
+        CreateDate = DateTime.UtcNow;
     }
 
     public static Result<Order?> Create(
@@ -46,5 +46,33 @@ public class Order: BaseEntity
         return errors.Count != 0
             ? Result.Create<Order?>(errors.ToArray())
             : Result.Create<Order?>(new Order(customerId, productId));
+    }
+    
+    public Result Process()
+    {
+        Status = OrderStatus.Processing;
+        UpdateDate = DateTime.UtcNow;
+        return Result.Success;
+    }
+    
+    public Result Ship()
+    {
+        Status = OrderStatus.Shipped;
+        UpdateDate = DateTime.UtcNow;
+        return Result.Success;
+    }
+    
+    public Result Delivery()
+    {
+        Status = OrderStatus.Delivered;
+        UpdateDate = DateTime.UtcNow;
+        return Result.Success;
+    }
+    
+    public Result Cancel()
+    {
+        Status = OrderStatus.Cancelled;
+        UpdateDate = DateTime.UtcNow;
+        return Result.Success;
     }
 }

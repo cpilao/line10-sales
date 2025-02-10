@@ -11,6 +11,7 @@ public class IntegrationDataTestFixture: IAsyncLifetime
     public ApplicationDbContext DbContext { get; private set; } = null!;
     public ICustomerRepository CustomerRepository { get; private set; } = null!;
     public IProductRepository ProductRepository { get; private set; } = null!;
+    public IOrderRepository OrderRepository { get; private set; } = null!;
     
     public async Task InitializeAsync()
     {
@@ -26,6 +27,7 @@ public class IntegrationDataTestFixture: IAsyncLifetime
 
         CustomerRepository = new CustomerRepository(DbContext);
         ProductRepository = new ProductRepository(DbContext);
+        OrderRepository = new OrderRepository(DbContext);
     }
 
     public async Task DisposeAsync()

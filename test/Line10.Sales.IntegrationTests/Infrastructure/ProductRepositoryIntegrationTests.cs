@@ -13,7 +13,7 @@ public class ProductRepositoryIntegrationTests : IClassFixture<IntegrationDataTe
     }
 
     [Fact]
-    public async Task AddProduct_ShouldAddProductToDatabase()
+    public async Task AddProduct_Should_AddProductToDatabase()
     {
         // Arrange
         var product = Product
@@ -33,7 +33,7 @@ public class ProductRepositoryIntegrationTests : IClassFixture<IntegrationDataTe
     }
     
     [Fact]
-    public async Task UpdateProduct__ShouldUpdateProduct_ToDatabase()
+    public async Task UpdateProduct__Should_UpdateProduct_ToDatabase()
     {
         // Arrange
         var product = Product
@@ -58,7 +58,7 @@ public class ProductRepositoryIntegrationTests : IClassFixture<IntegrationDataTe
     }
 
     [Fact]
-    public async Task DeleteProduct_ShouldRemoveProductFromDatabase()
+    public async Task DeleteProduct_Should_RemoveProductFromDatabase()
     {
         // Arrange
         var product = Product
