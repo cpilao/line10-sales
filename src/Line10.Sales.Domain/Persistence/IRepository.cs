@@ -8,5 +8,5 @@ public interface IRepository<TEntity>
     ValueTask<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     ValueTask AddAsync(TEntity entity, CancellationToken cancellationToken = default);
     ValueTask UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
-    ValueTask DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    ValueTask<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

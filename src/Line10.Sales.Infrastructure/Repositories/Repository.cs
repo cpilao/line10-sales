@@ -29,13 +29,16 @@ public class Repository<TEntity>
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async ValueTask DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async ValueTask<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var customer = await _context.Set<TEntity>().FindAsync([id], cancellationToken);
         if (customer != null)
         {
             _context.Set<TEntity>().Remove(customer);
             await _context.SaveChangesAsync(cancellationToken);
+            return true;
         }
+
+        return false;
     }
 }
