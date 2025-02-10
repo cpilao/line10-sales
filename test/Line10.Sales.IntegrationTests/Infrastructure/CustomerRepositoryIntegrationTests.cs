@@ -60,7 +60,7 @@ public class CustomerRepositoryIntegrationTests : IClassFixture<IntegrationDataT
     }
 
     [Fact]
-    public async Task RemoveCustomer_ShouldRemoveCustomerFromDatabase()
+    public async Task DeleteCustomer_ShouldRemoveCustomerFromDatabase()
     {
         // Arrange
         var customer = Customer

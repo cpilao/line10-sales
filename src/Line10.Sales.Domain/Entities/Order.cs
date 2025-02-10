@@ -2,12 +2,11 @@ using Line10.Sales.Core;
 
 namespace Line10.Sales.Domain.Entities;
 
-public class Order
+public class Order: BaseEntity
 {
     private const string InvalidOrderCustomerId = nameof(InvalidOrderCustomerId);
     private const string InvalidOrderProductId = nameof(InvalidOrderProductId);
-
-    public Guid Id { get; private set; }
+    
     public Guid CustomerId { get; private set; }
     public Guid ProductId { get; private set; }
     public OrderStatus Status { get; private set; }

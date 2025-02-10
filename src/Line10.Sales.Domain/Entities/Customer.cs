@@ -2,14 +2,13 @@ using Line10.Sales.Core;
 
 namespace Line10.Sales.Domain.Entities;
 
-public class Customer
+public class Customer: BaseEntity
 {
     private const string InvalidCustomerFirstName = nameof(InvalidCustomerFirstName);
     private const string InvalidCustomerLastName = nameof(InvalidCustomerLastName);
     private const string InvalidCustomerEmail = nameof(InvalidCustomerEmail);
     private const string InvalidCustomerPhone = nameof(InvalidCustomerPhone);
     
-    public Guid Id { get; private set; }
     public string FirstName { get; private set; } = string.Empty;
     public string LastName { get; private set; } = string.Empty;
     public string Email { get; private set; } = string.Empty;

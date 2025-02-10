@@ -3,9 +3,9 @@ using Line10.Sales.Domain.Persistence;
 
 namespace Line10.Sales.Infrastructure.Repositories;
 
-public class CustomerRepository: Repository<Customer>, ICustomerRepository
+public class ProductRepository: Repository<Product>, IProductRepository
 {
-    public CustomerRepository(ApplicationDbContext context) :
+    public ProductRepository(ApplicationDbContext context) :
         base(context)
     {
     }

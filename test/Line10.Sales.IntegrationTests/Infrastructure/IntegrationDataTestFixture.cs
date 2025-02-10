@@ -10,6 +10,7 @@ public class IntegrationDataTestFixture: IAsyncLifetime
     public PostgreSqlContainerWrapper DataContainer { get; private set; } = null!;
     public ApplicationDbContext DbContext { get; private set; } = null!;
     public ICustomerRepository CustomerRepository { get; private set; } = null!;
+    public IProductRepository ProductRepository { get; private set; } = null!;
     
     public async Task InitializeAsync()
     {
@@ -24,6 +25,7 @@ public class IntegrationDataTestFixture: IAsyncLifetime
         await DbContext.Database.MigrateAsync();
 
         CustomerRepository = new CustomerRepository(DbContext);
+        ProductRepository = new ProductRepository(DbContext);
     }
 
     public async Task DisposeAsync()
