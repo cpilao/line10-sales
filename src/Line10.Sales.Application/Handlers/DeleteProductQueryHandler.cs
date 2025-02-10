@@ -5,20 +5,20 @@ using MediatR;
 
 namespace Line10.Sales.Application.Handlers;
 
-public class DeleteCustomerQueryHandler: IRequestHandler<DeleteCustomerRequest, VoidResponse>
+public class DeleteProductQueryHandler: IRequestHandler<DeleteProductRequest, VoidResponse>
 {
-    private readonly ICustomerRepository _customerRepository;
+    private readonly IProductRepository _productRepository;
 
-    public DeleteCustomerQueryHandler(ICustomerRepository customerRepository)
+    public DeleteProductQueryHandler(IProductRepository productRepository)
     {
-        _customerRepository = customerRepository;
+        _productRepository = productRepository;
     }
     
     public async Task<VoidResponse> Handle(
-        DeleteCustomerRequest request,
+        DeleteProductRequest request,
         CancellationToken cancellationToken)
     {
-        var result = await _customerRepository.DeleteAsync(request.CustomerId, cancellationToken);
+        var result = await _productRepository.DeleteAsync(request.ProductId, cancellationToken);
         return result
             ? VoidResponse.Success
             : new VoidResponse

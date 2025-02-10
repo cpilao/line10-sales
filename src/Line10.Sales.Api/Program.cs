@@ -37,7 +37,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Api endpoints
 app.AddCustomerEndpoints();
+app.AddProductEndpoints();
 
 app.Run();
 
