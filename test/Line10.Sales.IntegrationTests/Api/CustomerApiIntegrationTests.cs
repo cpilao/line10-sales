@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
+using Line10.Sales.IntegrationTests.Extensions;
 using Shouldly;
 
 namespace Line10.Sales.IntegrationTests.Api;
@@ -176,5 +177,46 @@ public class CustomerApiIntegrationTests: BaseApiIntegrationTest
         
         // Assert
         pageNumber.ShouldBe(10);
+    }
+    
+    [Theory]
+    [InlineData("FirstName", "Desc", "customer_c", "customer_b", "customer_a")]
+    [InlineData("FirstName", "Asc", "customer_a", "customer_b", "customer_c")]
+    [InlineData("LastName", "Desc", "customer_c", "customer_a", "customer_b")]
+    [InlineData("LastName", "Asc", "customer_b", "customer_a", "customer_c")]
+    [InlineData("Email", "Asc", "customer_a", "customer_b", "customer_c")]
+    [InlineData("Email", "Desc", "customer_c", "customer_b", "customer_a")]
+    [InlineData("Phone", "Asc", "customer_a", "customer_b", "customer_c")]
+    [InlineData("Phone", "Desc", "customer_c", "customer_b", "customer_a")]
+    public async Task GetCustomers_ShouldReturnOrderedCustomers(
+        string orderBy,
+        string order,
+        string expectedFirstCustomerName,
+        string expectedSecondCustomerName,
+        string expectedThirdCustomerName)
+    {
+        // Arrange
+        var url = "/customers";
+        var testId = Guid.NewGuid().ToString();
+        
+        await _client.CreateCustomer($"{testId}_customer_a", "customer last name b", "customer_a@example.com", "123-456-7890");
+        await _client.CreateCustomer($"{testId}_customer_b", "customer last name a", "customer_b@example.com", "123-456-7891");
+        await _client.CreateCustomer($"{testId}_customer_c", "customer last name c", "customer_c@example.com", "123-456-7892");
+        
+        // Act
+        var response = await _client.GetAsync($"{url}?orderBy={orderBy}&order={order}&firstName={testId}");
+        response.EnsureSuccessStatusCode();
+
+        var content = await response.Content.ReadFromJsonAsync<JsonNode>();
+        content.ShouldNotBeNull();
+        content["customers"].ShouldNotBeNull();
+
+        var products = content["customers"]!.AsArray();
+
+        // Assert
+        products.ShouldNotBeNull();
+        products[0]?["firstName"]?.GetValue<string>().ShouldBe($"{testId}_{expectedFirstCustomerName}");
+        products[1]?["firstName"]?.GetValue<string>().ShouldBe($"{testId}_{expectedSecondCustomerName}");
+        products[2]?["firstName"]?.GetValue<string>().ShouldBe($"{testId}_{expectedThirdCustomerName}");
     }
 }

@@ -1,5 +1,8 @@
 using Line10.Sales.Application.Commands;
 using Line10.Sales.Application.Queries;
+using Line10.Sales.Domain.Entities;
+using Line10.Sales.Domain.Extensions;
+using Line10.Sales.Domain.Persistence;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,12 +13,19 @@ public static class CustomerEndpoints
     public static IEndpointRouteBuilder AddCustomerEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
     {
         endpointRouteBuilder.MapGet("/customers", async (
-                [FromServices] IMediator mediator, 
+                [FromServices] IMediator mediator,
+                [FromQuery] string? orderBy,
+                [FromQuery] SortOrder? order,
+                [FromQuery] string? firstName,
+                [FromQuery] string? lastName,
                 [FromQuery] int pageNumber = 1, 
                 [FromQuery] int pageSize = 10) =>
             {
                 var response = await mediator.Send(new GetCustomersRequest
                 {
+                    SortInfo = orderBy.GetSortInfo<Customer>(order),
+                    FirstName = firstName,
+                    LastName = lastName,
                     PageNumber = pageNumber,
                     PageSize = pageSize
                 });
