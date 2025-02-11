@@ -34,8 +34,8 @@ public class ProductApiIntegrationTests: IClassFixture<WebApplicationFactory<Pro
         var content = await response.Content.ReadFromJsonAsync<JsonNode>();
         content.ShouldNotBeNull();
         content["productId"].ShouldNotBeNull();
-        var customerId = content["productId"]?.GetValue<Guid>();
-        customerId.ShouldNotBe(Guid.Empty);
+        var productId = content["productId"]?.GetValue<Guid>();
+        productId.ShouldNotBe(Guid.Empty);
     }
     
     [Fact]
@@ -84,10 +84,10 @@ public class ProductApiIntegrationTests: IClassFixture<WebApplicationFactory<Pro
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadFromJsonAsync<JsonNode>();
         content.ShouldNotBeNull();
-        var customerId = content["productId"]?.GetValue<Guid>();
+        var productId = content["productId"]?.GetValue<Guid>();
         
         // Assert
-        response = await _client.DeleteAsync($"{url}/{customerId}");
+        response = await _client.DeleteAsync($"{url}/{productId}");
         response.EnsureSuccessStatusCode();
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
     }
@@ -108,10 +108,10 @@ public class ProductApiIntegrationTests: IClassFixture<WebApplicationFactory<Pro
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadFromJsonAsync<JsonNode>();
         content.ShouldNotBeNull();
-        var customerId = content["productId"]?.GetValue<Guid>();
+        var productId = content["productId"]?.GetValue<Guid>();
         
         // Assert
-        response = await _client.PutAsJsonAsync($"{url}/{customerId}",new
+        response = await _client.PutAsJsonAsync($"{url}/{productId}",new
         {
             name = "product2",
             description = "product 2 description",
@@ -119,12 +119,12 @@ public class ProductApiIntegrationTests: IClassFixture<WebApplicationFactory<Pro
         });
         response.EnsureSuccessStatusCode();
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
-        response = await _client.GetAsync($"{url}/{customerId}");
+        response = await _client.GetAsync($"{url}/{productId}");
         response.EnsureSuccessStatusCode();
         
         content = await response.Content.ReadFromJsonAsync<JsonNode>();
         content.ShouldNotBeNull();
-        content["productId"]?.ToString().ShouldBe(customerId.ToString());
+        content["productId"]?.ToString().ShouldBe(productId.ToString());
         content["name"]?.ToString().ShouldBe("product2");
         content["description"]?.ToString().ShouldBe("product 2 description");
         content["sku"]?.ToString().ShouldBe("SK00002");

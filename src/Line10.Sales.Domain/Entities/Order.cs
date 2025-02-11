@@ -6,6 +6,7 @@ public class Order: BaseEntity
 {
     private const string InvalidOrderCustomerId = nameof(InvalidOrderCustomerId);
     private const string InvalidOrderProductId = nameof(InvalidOrderProductId);
+    private const string OrderActionNotAllowed = nameof(OrderActionNotAllowed);
     
     public Guid CustomerId { get; private set; }
     public Guid ProductId { get; private set; }
@@ -50,6 +51,11 @@ public class Order: BaseEntity
     
     public Result Process()
     {
+        if (Status != OrderStatus.Pending)
+        {
+            return Result.Create(new Error(OrderActionNotAllowed, "Orders can only be processed from 'Pending' state"));
+        }
+        
         Status = OrderStatus.Processing;
         UpdateDate = DateTime.UtcNow;
         return Result.Success;
@@ -57,6 +63,11 @@ public class Order: BaseEntity
     
     public Result Ship()
     {
+        if (Status != OrderStatus.Processing)
+        {
+            return Result.Create(new Error(OrderActionNotAllowed, "Orders can only be shipped from 'Processing' state"));
+        }
+        
         Status = OrderStatus.Shipped;
         UpdateDate = DateTime.UtcNow;
         return Result.Success;
@@ -64,6 +75,11 @@ public class Order: BaseEntity
     
     public Result Delivery()
     {
+        if (Status != OrderStatus.Shipped)
+        {
+            return Result.Create(new Error(OrderActionNotAllowed, "Orders can only be delivered from 'Shipped' state"));
+        }
+        
         Status = OrderStatus.Delivered;
         UpdateDate = DateTime.UtcNow;
         return Result.Success;

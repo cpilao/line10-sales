@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Line10.Sales.Api.BackgroundServices;
 using Line10.Sales.Api.Endpoints;
 using Line10.Sales.Domain.Persistence;
@@ -11,6 +12,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// json settings
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 // Application
 builder.Services.AddMediatR(o =>
@@ -40,6 +47,7 @@ app.UseHttpsRedirection();
 // Api endpoints
 app.AddCustomerEndpoints();
 app.AddProductEndpoints();
+app.AddOrderEndpoints();
 
 app.Run();
 
