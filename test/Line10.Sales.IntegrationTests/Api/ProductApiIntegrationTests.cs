@@ -6,13 +6,14 @@ using Shouldly;
 
 namespace Line10.Sales.IntegrationTests.Api;
 
-public class ProductApiIntegrationTests: IClassFixture<WebApplicationFactory<Program>>
+public class ProductApiIntegrationTests: BaseApiIntegrationTest
 {
     private readonly HttpClient _client;
 
-    public ProductApiIntegrationTests(WebApplicationFactory<Program> factory)
+    public ProductApiIntegrationTests(IntegrationApiTestFixture fixture) 
+        : base(fixture)
     {
-        _client = factory.CreateClient();
+        _client = _fixture.CreateClient();
     }
 
     [Fact]

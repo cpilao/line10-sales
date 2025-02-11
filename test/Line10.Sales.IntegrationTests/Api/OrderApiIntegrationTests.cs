@@ -1,18 +1,20 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
+using Line10.Sales.IntegrationTests.Extensions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Shouldly;
 
 namespace Line10.Sales.IntegrationTests.Api;
 
-public class OrderApiIntegrationTests: IClassFixture<WebApplicationFactory<Program>>
+public class OrderApiIntegrationTests: BaseApiIntegrationTest
 {
     private readonly HttpClient _client;
 
-    public OrderApiIntegrationTests(WebApplicationFactory<Program> factory)
+    public OrderApiIntegrationTests(IntegrationApiTestFixture fixture) 
+        : base(fixture)
     {
-        _client = factory.CreateClient();
+        _client = _fixture.CreateClient();
     }
 
     [Fact]
@@ -22,9 +24,16 @@ public class OrderApiIntegrationTests: IClassFixture<WebApplicationFactory<Progr
         var url = "/orders";
         
         // create customer
-        var customerId = await CreateCustomer();
+        var customerId = await _client.CreateCustomer(
+            "John",
+            "Doe",
+             "john.doe@example.com",
+             "123-456-7890");
         // create product
-        var productId = await CreateProduct();
+        var productId = await _client.CreateProduct(
+            "product1",
+            "product 1 description",
+            "SK00001");
 
         // Act
         var response = await _client.PostAsJsonAsync(url, new
@@ -49,7 +58,7 @@ public class OrderApiIntegrationTests: IClassFixture<WebApplicationFactory<Progr
         var url = "/orders";
         
         // create order
-        var orderInfo = await CreateOrder();
+        var orderInfo = await _client.CreateFullOrder();
 
         // Act
         var response = await _client.GetAsync($"{url}/{orderInfo.OrderId}");
@@ -71,7 +80,7 @@ public class OrderApiIntegrationTests: IClassFixture<WebApplicationFactory<Progr
         var url = "/orders";
         
         // create order
-        var orderInfo = await CreateOrder();
+        var orderInfo = await _client.CreateFullOrder();
 
         // Act
         var response = await _client.PostAsync($"{url}/{orderInfo.OrderId}/cancel", new StringContent(string.Empty));
@@ -93,7 +102,7 @@ public class OrderApiIntegrationTests: IClassFixture<WebApplicationFactory<Progr
         var url = "/orders";
         
         // create order
-        var orderInfo = await CreateOrder();
+        var orderInfo = await _client.CreateFullOrder();
 
         // Act
         var response = await _client.PostAsync($"{url}/{orderInfo.OrderId}/process", new StringContent(string.Empty));
@@ -115,7 +124,7 @@ public class OrderApiIntegrationTests: IClassFixture<WebApplicationFactory<Progr
         var url = "/orders";
         
         // create order and process
-        var orderInfo = await CreateOrder();
+        var orderInfo = await _client.CreateFullOrder();
         var response = await _client.PostAsync($"{url}/{orderInfo.OrderId}/process", new StringContent(string.Empty));
         response.EnsureSuccessStatusCode();
 
@@ -139,7 +148,7 @@ public class OrderApiIntegrationTests: IClassFixture<WebApplicationFactory<Progr
         var url = "/orders";
         
         // create order and process
-        var orderInfo = await CreateOrder();
+        var orderInfo = await _client.CreateFullOrder();
         var response = await _client.PostAsync($"{url}/{orderInfo.OrderId}/process", new StringContent(string.Empty));
         response.EnsureSuccessStatusCode();
         response = await _client.PostAsync($"{url}/{orderInfo.OrderId}/ship", new StringContent(string.Empty));
@@ -156,64 +165,5 @@ public class OrderApiIntegrationTests: IClassFixture<WebApplicationFactory<Progr
         var content = await response.Content.ReadFromJsonAsync<JsonNode>();
         content.ShouldNotBeNull();
         content["status"]?.ToString().ShouldBe("Delivered");
-    }
-    
-    private async Task<Guid> CreateCustomer()
-    {
-        var url = "/customers";
-        var response = await _client.PostAsJsonAsync(url, new
-        {
-            firstName = "John",
-            lastName = "Doe",
-            email = "john.doe@example.com",
-            phone = "123-456-7890"
-        });
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadFromJsonAsync<JsonNode>();
-        content.ShouldNotBeNull();
-        var customerId = content["customerId"]?.GetValue<Guid>();
-        customerId.ShouldNotBeNull();
-        return customerId.Value;
-    }
-    
-    private async Task<Guid> CreateProduct()
-    {
-        var url = "/products";
-        var response = await _client.PostAsJsonAsync(url, new
-        {
-            name = "product1",
-            description = "product 1 description",
-            sku = "SK00001"
-        });
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadFromJsonAsync<JsonNode>();
-        content.ShouldNotBeNull();
-        var productId = content["productId"]?.GetValue<Guid>();
-        productId.ShouldNotBeNull();
-        return productId.Value;
-    }
-    
-    private async Task<(Guid OrderId, Guid CustomerId, Guid ProductId)> CreateOrder()
-    {
-        var url = "/orders";
-        
-        // create customer
-        var customerId = await CreateCustomer();
-        // create product
-        var productId = await CreateProduct();
-        // create order
-        var response = await _client.PostAsJsonAsync(url, new
-        {
-            customerId,
-            productId
-        });
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadFromJsonAsync<JsonNode>();
-        content.ShouldNotBeNull();
-        content["orderId"].ShouldNotBeNull();
-        var orderId = content["orderId"]?.GetValue<Guid>();
-        orderId.ShouldNotBe(Guid.Empty);
-        orderId.ShouldNotBeNull();
-        return (orderId.Value, customerId, productId);
     }
 }

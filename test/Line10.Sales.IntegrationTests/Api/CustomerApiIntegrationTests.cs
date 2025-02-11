@@ -1,18 +1,18 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Shouldly;
 
 namespace Line10.Sales.IntegrationTests.Api;
 
-public class CustomerApiIntegrationTests: IClassFixture<WebApplicationFactory<Program>>
+public class CustomerApiIntegrationTests: BaseApiIntegrationTest
 {
     private readonly HttpClient _client;
 
-    public CustomerApiIntegrationTests(WebApplicationFactory<Program> factory)
+    public CustomerApiIntegrationTests(IntegrationApiTestFixture fixture)
+        : base(fixture)
     {
-        _client = factory.CreateClient();
+        _client = _fixture.CreateClient();
     }
 
     [Fact]
@@ -134,5 +134,47 @@ public class CustomerApiIntegrationTests: IClassFixture<WebApplicationFactory<Pr
         content["lastName"]?.ToString().ShouldBe("Smith");
         content["email"]?.ToString().ShouldBe("charles.smith@example.com");
         content["phone"]?.ToString().ShouldBe("123-456-7890");
+    }
+    
+    [Fact]
+    public async Task GetCustomers_ShouldReturnSuccess()
+    {
+        // Arrange
+        var url = "/customers";
+        var customersCount = 100;
+        var pageSize = 10;
+        var pageNumber = 1;
+
+        for (var i = 0; i < customersCount; i++)
+        {
+            var createCustomerResponse = await _client.PostAsJsonAsync(url, new
+            {
+                firstName = $"John_{i+1}",
+                lastName = "Doe",
+                email = "john.doe@example.com",
+                phone = "123-456-7890"
+            });
+            createCustomerResponse.EnsureSuccessStatusCode();
+        }
+
+        // Act
+        while (customersCount!=0)
+        {
+            var response = await _client.GetAsync($"{url}?pageSize={pageSize}&pageNumber={pageNumber}");
+            response.EnsureSuccessStatusCode();
+            
+            var content = await response.Content.ReadFromJsonAsync<JsonNode>();
+            content.ShouldNotBeNull();
+            content["customers"].ShouldNotBeNull();
+            var customers = content["customers"]!.AsArray();
+            customersCount -= customers.Count;
+            if (customersCount != 0)
+            {
+                pageNumber++;
+            }
+        }
+        
+        // Assert
+        pageNumber.ShouldBe(10);
     }
 }

@@ -1,4 +1,6 @@
+using System.Linq.Expressions;
 using Line10.Sales.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Line10.Sales.Infrastructure.Repositories;
 
@@ -31,14 +33,28 @@ public class Repository<TEntity>
 
     public async ValueTask<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var customer = await _context.Set<TEntity>().FindAsync([id], cancellationToken);
-        if (customer != null)
+        var entity = await _context.Set<TEntity>().FindAsync([id], cancellationToken);
+        if (entity != null)
         {
-            _context.Set<TEntity>().Remove(customer);
+            _context.Set<TEntity>().Remove(entity);
             await _context.SaveChangesAsync(cancellationToken);
             return true;
         }
 
         return false;
+    }
+
+    public async ValueTask<IEnumerable<TEntity>> GetPage(
+        int pageNumber,
+        int pageSize,
+        Expression<Func<TEntity, bool>>? filter = null,
+        CancellationToken cancellationToken = default)
+    {
+        filter ??= entity => true; 
+        return await _context.Set<TEntity>()
+            .Where(filter)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
     }
 }
