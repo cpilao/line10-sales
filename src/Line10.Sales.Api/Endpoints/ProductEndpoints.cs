@@ -9,6 +9,23 @@ public static class ProductEndpoints
 {
     public static IEndpointRouteBuilder AddProductEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
     {
+        endpointRouteBuilder.MapGet("/products", async (
+                [FromServices] IMediator mediator, 
+                [FromQuery] int pageNumber = 1, 
+                [FromQuery] int pageSize = 10) =>
+            {
+                var response = await mediator.Send(new GetProductsRequest
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                });
+                return response.IsSuccess ? 
+                    Results.Json(new {response.Products}) : 
+                    Results.BadRequest(response.Errors);
+            })
+            .WithName("GetProducts")
+            .WithOpenApi();
+        
         endpointRouteBuilder.MapPost("/products", async (
                 [FromServices] IMediator mediator, 
                 [FromBody] CreateProductRequest request) =>

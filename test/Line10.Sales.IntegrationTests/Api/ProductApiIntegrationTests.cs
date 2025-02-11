@@ -130,4 +130,50 @@ public class ProductApiIntegrationTests: BaseApiIntegrationTest
         content["description"]?.ToString().ShouldBe("product 2 description");
         content["sku"]?.ToString().ShouldBe("SK00002");
     }
+    
+    [Theory]
+    [InlineData(100,10, 10)]
+    [InlineData(100,50, 2)]
+    [InlineData(100,20, 5)]
+    public async Task GetProducts_ShouldReturnSuccess(
+        int productsCount,
+        int pageSize,
+        int expectedPagesNumber)
+    {
+        // Arrange
+        var url = "/products";
+        var pageNumber = 1;
+
+        for (var i = 0; i < productsCount; i++)
+        {
+            var createResponse = await _client.PostAsJsonAsync(url, new
+            {
+                name = $"product_{i+1}",
+                description = $"product description_{i+1}",
+                sku = $"SK0000_{i+1}"
+            });
+            createResponse.EnsureSuccessStatusCode();
+        }
+
+        // Act
+        while (productsCount != 0)
+        {
+            var response = await _client.GetAsync($"{url}?pageSize={pageSize}&pageNumber={pageNumber}");
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadFromJsonAsync<JsonNode>();
+            content.ShouldNotBeNull();
+            content["products"].ShouldNotBeNull();
+
+            var products = content["products"]!.AsArray();
+            productsCount -= products.Count;
+            if (productsCount != 0)
+            {
+                pageNumber++;
+            }
+        }
+
+        // Assert
+        pageNumber.ShouldBe(expectedPagesNumber);
+    }
 }
