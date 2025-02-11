@@ -204,13 +204,11 @@ public class ProductApiIntegrationTests: BaseApiIntegrationTest
         var response = await _client.GetAsync($"{url}?orderBy={orderBy}&order={order}&name={testId}");
         response.EnsureSuccessStatusCode();
 
+        // Assert
         var content = await response.Content.ReadFromJsonAsync<JsonNode>();
         content.ShouldNotBeNull();
         content["products"].ShouldNotBeNull();
-
         var products = content["products"]!.AsArray();
-
-        // Assert
         products.ShouldNotBeNull();
         products[0]?["name"]?.GetValue<string>().ShouldBe($"{testId}_{expectedFirstProductName}");
         products[1]?["name"]?.GetValue<string>().ShouldBe($"{testId}_{expectedSecondProductName}");
