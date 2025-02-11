@@ -17,7 +17,12 @@ public class Repository<TEntity>
     
     public async ValueTask<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.Set<TEntity>().FindAsync([id], cancellationToken);
+        var entity = await _context.Set<TEntity>().FindAsync([id], cancellationToken);
+        if (entity != null)
+        {
+            OnLoad(entity);
+        }
+        return entity;
     }
 
     public async ValueTask AddAsync(TEntity customer, CancellationToken cancellationToken = default)
@@ -75,5 +80,10 @@ public class Repository<TEntity>
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
+    }
+
+    protected virtual void OnLoad(TEntity entity)
+    {
+        
     }
 }

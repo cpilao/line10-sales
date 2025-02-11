@@ -9,6 +9,36 @@ public static class OrderEndpoints
 {
     public static IEndpointRouteBuilder AddOrderEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
     {
+        endpointRouteBuilder.MapPost("/orders/{id:guid}/products", async (
+                [FromServices] IMediator mediator,
+                [FromRoute] Guid id,
+                [FromBody] AddOrderProductRequest request) =>
+            {
+                var response = await mediator.Send(request with {OrderId = id});
+                return response.IsSuccess ? Results.NoContent() : Results.BadRequest(response.Errors);
+            })
+            .WithName("AddOrderProduct");
+            
+        endpointRouteBuilder.MapDelete("/orders/{id:guid}/products", async (
+                [FromServices] IMediator mediator,
+                [FromRoute] Guid id,
+                [FromBody] RemoveOrderProductRequest request) =>
+            {
+                var response = await mediator.Send(request with {OrderId = id});
+                return response.IsSuccess ? Results.NoContent() : Results.BadRequest(response.Errors);
+            })
+            .WithName("RemoveOrderProduct");
+        
+        endpointRouteBuilder.MapGet("/orders/{id:guid}/products", async (
+                [FromServices] IMediator mediator,
+                [FromRoute] Guid id) =>
+            {
+                var response = await mediator.Send(new GetOrderProductsRequest {OrderId = id});
+                return response.IsSuccess ? Results.Json(response.OrderProducts) : Results.BadRequest(response.Errors);
+            })
+            .WithName("GetOrderProducts")
+            
+            .WithOpenApi();
         endpointRouteBuilder.MapPost("/orders", async (
                 [FromServices] IMediator mediator, 
                 [FromBody] CreateOrderRequest request) =>

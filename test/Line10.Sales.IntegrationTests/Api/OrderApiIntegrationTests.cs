@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
 using Line10.Sales.IntegrationTests.Extensions;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Shouldly;
 
 namespace Line10.Sales.IntegrationTests.Api;
@@ -164,5 +163,97 @@ public class OrderApiIntegrationTests: BaseApiIntegrationTest
         var content = await response.Content.ReadFromJsonAsync<JsonNode>();
         content.ShouldNotBeNull();
         content["status"]?.ToString().ShouldBe("Delivered");
+    }
+    
+    [Fact]
+    public async Task AddOrderProduct_ShouldReturnSuccess()
+    {
+        // Arrange
+        var url = "/orders";
+        
+        // create order
+        var orderInfo = await _client.CreateFullOrder();
+        var productIdA = await _client.CreateProduct("another product a", "product a description", "SK0001A");
+        var productIdB = await _client.CreateProduct("another product b", "product b description", "SK0001B");
+
+        // Act
+        var response = await _client.PostAsJsonAsync($"{url}/{orderInfo.OrderId}/products", new
+        {
+            quantity = 1,
+            productId = productIdA
+        });
+        response.EnsureSuccessStatusCode();
+        response = await _client.PostAsJsonAsync($"{url}/{orderInfo.OrderId}/products", new
+        {
+            quantity = 1,
+            productId = productIdB
+        });
+        response.EnsureSuccessStatusCode();
+        response = await _client.PostAsJsonAsync($"{url}/{orderInfo.OrderId}/products", new
+        {
+            quantity = 1,
+            productId = productIdB
+        });
+        response.EnsureSuccessStatusCode();
+        
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        response = await _client.GetAsync($"{url}/{orderInfo.OrderId}/products");
+        response.EnsureSuccessStatusCode();
+        var orderProducts = await response.Content.ReadFromJsonAsync<JsonArray>();
+        orderProducts.ShouldNotBeNull();
+        orderProducts.ShouldNotBeNull();
+        orderProducts.Count.ShouldBe(3);
+        orderProducts.Sum(node => node?["quantity"]?.GetValue<int>()).ShouldBe(4);
+    }
+    
+    [Fact]
+    public async Task RemoveOrderProduct_ShouldReturnSuccess()
+    {
+        // Arrange
+        var url = "/orders";
+        
+        // create order
+        var orderInfo = await _client.CreateFullOrder();
+        var productIdA = await _client.CreateProduct("another product a", "product a description", "SK0001A");
+        var productIdB = await _client.CreateProduct("another product b", "product b description", "SK0001B");
+
+        // add order products
+        var response = await _client.PostAsJsonAsync($"{url}/{orderInfo.OrderId}/products", new
+        {
+            quantity = 5,
+            productId = productIdA
+        });
+        response.EnsureSuccessStatusCode();
+        response = await _client.PostAsJsonAsync($"{url}/{orderInfo.OrderId}/products", new
+        {
+            quantity = 2,
+            productId = productIdB
+        });
+        response.EnsureSuccessStatusCode();
+        response = await _client.PostAsJsonAsync($"{url}/{orderInfo.OrderId}/products", new
+        {
+            quantity = 3,
+            productId = productIdB
+        });
+        response.EnsureSuccessStatusCode();
+        
+        // Act
+        response = await _client.DeleteAsJsonAsync($"{url}/{orderInfo.OrderId}/products", new
+        {
+            quantity = 5,
+            productId = productIdB
+        });
+        response.EnsureSuccessStatusCode();
+        
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        response = await _client.GetAsync($"{url}/{orderInfo.OrderId}/products");
+        response.EnsureSuccessStatusCode();
+        var orderProducts = await response.Content.ReadFromJsonAsync<JsonArray>();
+        orderProducts.ShouldNotBeNull();
+        orderProducts.ShouldNotBeNull();
+        orderProducts.Count.ShouldBe(2);
+        orderProducts.Sum(node => node?["quantity"]?.GetValue<int>()).ShouldBe(6);
     }
 }

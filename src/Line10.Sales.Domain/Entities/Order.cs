@@ -6,6 +6,8 @@ public class Order: BaseEntity
 {
     private const string InvalidOrderCustomerId = nameof(InvalidOrderCustomerId);
     private const string InvalidOrderProductId = nameof(InvalidOrderProductId);
+    private const string InvalidOrderProductQuantity = nameof(InvalidOrderProductQuantity);
+    private const string OrderProductNotFound= nameof(OrderProductNotFound);
     private const string OrderActionNotAllowed = nameof(OrderActionNotAllowed);
     
     public Guid CustomerId { get; private set; }
@@ -93,6 +95,78 @@ public class Order: BaseEntity
     public Result Cancel()
     {
         Status = OrderStatus.Cancelled;
+        UpdateDate = DateTime.UtcNow;
+        return Result.Success;
+    }
+    
+    public Result AddProduct(
+        Guid productId,
+        int quantity)
+    {
+        if (Status != OrderStatus.Pending)
+        {
+            return Result.Create(new Error(OrderActionNotAllowed, "Orders can only add new products in 'Pending' state"));
+        }
+        
+        if (quantity <= 0)
+        {
+            return Result.Create(new Error(InvalidOrderProductQuantity));
+        }
+
+        var orderProduct = OrderProducts.FirstOrDefault(o => o.ProductId.Equals(productId));
+        if (orderProduct == null)
+        {
+            OrderProducts.Add(new OrderProduct
+            {
+                OrderId = Id,
+                ProductId = productId,
+                Quantity = quantity
+            });
+        }
+        else
+        {
+            orderProduct.Quantity += quantity;
+        }
+
+        UpdateDate = DateTime.UtcNow;
+        return Result.Success;
+    }
+    
+    public Result RemoveProduct(
+        Guid productId,
+        int? quantity)
+    {
+        if (Status != OrderStatus.Pending)
+        {
+            return Result.Create(new Error(OrderActionNotAllowed, "Orders can only add new products in 'Pending' state"));
+        }
+        
+        if (quantity is <= 0)
+        {
+            return Result.Create(new Error(InvalidOrderProductQuantity));
+        }
+        
+        var orderProduct = OrderProducts.FirstOrDefault(o => o.ProductId.Equals(productId));
+        if (orderProduct == null)
+        {
+            return Result.Create(new Error(OrderProductNotFound));
+        }
+
+        // remove product from order
+        if (!quantity.HasValue)
+        {
+            OrderProducts.Remove(orderProduct);
+        }
+        else
+        {
+            // remove product quantity from order
+            orderProduct.Quantity -= quantity.Value;
+            if (orderProduct.Quantity <= 0)
+            {
+                OrderProducts.Remove(orderProduct);
+            }
+        }
+
         UpdateDate = DateTime.UtcNow;
         return Result.Success;
     }

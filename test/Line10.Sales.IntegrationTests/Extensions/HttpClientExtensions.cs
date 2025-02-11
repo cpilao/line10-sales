@@ -1,4 +1,6 @@
 using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Shouldly;
 
@@ -80,5 +82,20 @@ public static class HttpClientExtensions
         orderId.ShouldNotBe(Guid.Empty);
         orderId.ShouldNotBeNull();
         return (orderId.Value, customerId, productId);
+    }
+    
+    public static async Task<HttpResponseMessage> DeleteAsJsonAsync(
+        this HttpClient client,
+        string requestUri, 
+        object body)
+    {
+        var jsonBody = JsonSerializer.Serialize(body);
+        var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(HttpMethod.Delete, requestUri)
+        {
+            Content = content 
+        };
+
+        return await client.SendAsync(request);
     }
 }

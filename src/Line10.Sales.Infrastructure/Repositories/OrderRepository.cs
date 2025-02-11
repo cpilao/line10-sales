@@ -1,6 +1,6 @@
 using Line10.Sales.Domain.Entities;
 using Line10.Sales.Domain.Persistence;
-using Line10.Sales.Infrastructure.Projections;
+using Line10.Sales.Domain.Projections;
 using Microsoft.EntityFrameworkCore;
 
 namespace Line10.Sales.Infrastructure.Repositories;
@@ -12,7 +12,7 @@ public class OrderRepository: Repository<Order>, IOrderRepository
     {
     }
 
-    public async Task<IEnumerable<OrderProductProjection>> GetProducts(Guid orderId)
+    public async Task<IEnumerable<OrderProductProjection>> GetProducts(Guid orderId, CancellationToken cancellationToken = default)
     {
         return await _context.OrderProducts
             .Where(o => o.OrderId == orderId)
@@ -24,6 +24,14 @@ public class OrderRepository: Repository<Order>, IOrderRepository
                 ProductDescription = op.Product.Description,
                 Quantity = op.Quantity
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
+    }
+
+    protected override void OnLoad(Order entity)
+    {
+        base.OnLoad(entity);
+        _context.Entry(entity)
+            .Collection(o => o.OrderProducts)
+            .Load();
     }
 }
