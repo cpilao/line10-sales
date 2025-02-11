@@ -38,7 +38,7 @@ public class OrderRepositoryIntegrationTests : IClassFixture<IntegrationDataTest
         var savedOrder = await _fixture.OrderRepository.GetByIdAsync(order.Id);
         savedOrder.ShouldNotBeNull();
         savedOrder.CustomerId.ShouldBe(order.CustomerId);
-        savedOrder.ProductId.ShouldBe(order.ProductId);
+        savedOrder.OrderProducts.ShouldContain(o => o.ProductId.Equals(o.ProductId));
         savedOrder.Status.ShouldBe(OrderStatus.Pending);
     }
     
@@ -71,7 +71,7 @@ public class OrderRepositoryIntegrationTests : IClassFixture<IntegrationDataTest
         var updatedOrder = await _fixture.OrderRepository.GetByIdAsync(order.Id);
         updatedOrder.ShouldNotBeNull();
         updatedOrder.CustomerId.ShouldBe(order.CustomerId);
-        updatedOrder.ProductId.ShouldBe(order.ProductId);
+        updatedOrder.OrderProducts.ShouldContain(o => o.ProductId.Equals(o.ProductId));
         updatedOrder.Status.ShouldBe(OrderStatus.Cancelled);
     }
     

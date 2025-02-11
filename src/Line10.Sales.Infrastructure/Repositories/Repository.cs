@@ -8,7 +8,7 @@ namespace Line10.Sales.Infrastructure.Repositories;
 public class Repository<TEntity>
     where TEntity: BaseEntity
 {
-    private readonly ApplicationDbContext _context;
+    protected readonly ApplicationDbContext _context;
 
     public Repository(ApplicationDbContext context)
     {

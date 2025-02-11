@@ -9,10 +9,10 @@ public class Order: BaseEntity
     private const string OrderActionNotAllowed = nameof(OrderActionNotAllowed);
     
     public Guid CustomerId { get; private set; }
-    public Guid ProductId { get; private set; }
     public OrderStatus Status { get; private set; }
     public DateTime CreateDate { get; private set; }
     public DateTime? UpdateDate { get; private set; }
+    public ICollection<OrderProduct> OrderProducts { get; private set; } = [];
 
     private Order()
     {
@@ -24,7 +24,12 @@ public class Order: BaseEntity
     {
         Id = Guid.NewGuid();
         CustomerId = customerId;
-        ProductId = productId;
+        OrderProducts = new List<OrderProduct>([new OrderProduct
+        {
+            ProductId = productId,
+            OrderId = Id,
+            Quantity = 1
+        }]);
         Status = OrderStatus.Pending;
         CreateDate = DateTime.UtcNow;
     }

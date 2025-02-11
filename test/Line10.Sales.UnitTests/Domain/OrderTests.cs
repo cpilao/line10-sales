@@ -20,7 +20,7 @@ public class OrderTests
         result.Content.ShouldNotBeNull();
         result.Content.Id.ShouldNotBe(Guid.Empty);
         result.Content.CustomerId.ShouldBe(customerId);
-        result.Content.ProductId.ShouldBe(productId);
+        result.Content.OrderProducts.ShouldContain(product => product.ProductId.Equals(productId));
         result.Content.Status.ShouldBe(OrderStatus.Pending);
         result.Content.CreateDate.ShouldBeInRange(DateTime.Now.AddSeconds(-1), DateTime.Now.AddSeconds(1));
     }

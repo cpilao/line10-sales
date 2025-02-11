@@ -30,7 +30,6 @@ public class GetOrderQueryHandler: IRequestHandler<GetOrderRequest, GetOrderResp
 
         return new GetOrderResponse
         {
-            ProductId = order.ProductId,
             CustomerId = order.CustomerId,
             Status = order.Status
         };

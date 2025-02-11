@@ -68,7 +68,6 @@ public class OrderApiIntegrationTests: BaseApiIntegrationTest
         var content = await response.Content.ReadFromJsonAsync<JsonNode>();
         content.ShouldNotBeNull();
         content["customerId"]?.ToString().ShouldBe(orderInfo.CustomerId.ToString());
-        content["productId"]?.ToString().ShouldBe(orderInfo.ProductId.ToString());
         content["orderId"]?.ToString().ShouldBe(orderInfo.OrderId.ToString());
         content["status"]?.ToString().ShouldBe("Pending");
     }
