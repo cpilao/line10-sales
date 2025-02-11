@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Line10.Sales.Domain.Entities;
+using Line10.Sales.Domain.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Line10.Sales.Infrastructure.Repositories;
@@ -48,11 +49,29 @@ public class Repository<TEntity>
         int pageNumber,
         int pageSize,
         Expression<Func<TEntity, bool>>? filter = null,
+        SortInfo<TEntity>? sortInfo = null,
         CancellationToken cancellationToken = default)
     {
-        filter ??= entity => true; 
-        return await _context.Set<TEntity>()
-            .Where(filter)
+        filter ??= entity => true;
+        sortInfo ??= new SortInfo<TEntity>
+        {
+            Expression = entity => entity.Id,
+            Order = SortOrder.Asc
+        };
+
+        var query = _context.Set<TEntity>()
+            .Where(filter);
+
+        if (sortInfo.Order == SortOrder.Asc)
+        {
+            query = query.OrderBy(sortInfo.Expression);
+        }
+        else
+        {
+            query = query.OrderByDescending(sortInfo.Expression);
+        }
+        
+        return await query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);

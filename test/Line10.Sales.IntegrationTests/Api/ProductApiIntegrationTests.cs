@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
+using Line10.Sales.IntegrationTests.Extensions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Shouldly;
 
@@ -135,7 +136,7 @@ public class ProductApiIntegrationTests: BaseApiIntegrationTest
     [InlineData(100,10, 10)]
     [InlineData(100,50, 2)]
     [InlineData(100,20, 5)]
-    public async Task GetProducts_ShouldReturnSuccess(
+    public async Task GetProducts_ShouldReturnPaginatedProducts(
         int productsCount,
         int pageSize,
         int expectedPagesNumber)
@@ -175,5 +176,44 @@ public class ProductApiIntegrationTests: BaseApiIntegrationTest
 
         // Assert
         pageNumber.ShouldBe(expectedPagesNumber);
+    }
+    
+    [Theory]
+    [InlineData("Name", "Desc", "product_c", "product_b", "product_a")]
+    [InlineData("Name", "Asc", "product_a", "product_b", "product_c")]
+    [InlineData("Description", "Desc", "product_c", "product_a", "product_b")]
+    [InlineData("Description", "Asc", "product_b", "product_a", "product_c")]
+    [InlineData("Sku", "Desc", "product_b", "product_c", "product_a")]
+    [InlineData("Sku", "Asc", "product_a", "product_c", "product_b")]
+    public async Task GetProducts_ShouldReturnOrderedProducts(
+        string orderBy,
+        string order,
+        string expectedFirstProductName,
+        string expectedSecondProductName,
+        string expectedThirdProductName)
+    {
+        // Arrange
+        var url = "/products";
+        var testId = Guid.NewGuid().ToString();
+        
+        await _client.CreateProduct($"{testId}_product_a", "some description b", "SK0001");
+        await _client.CreateProduct($"{testId}_product_b", "some description a", "SK0003");
+        await _client.CreateProduct($"{testId}_product_c", "some description c", "SK0002");
+        
+        // Act
+        var response = await _client.GetAsync($"{url}?orderBy={orderBy}&order={order}&name={testId}");
+        response.EnsureSuccessStatusCode();
+
+        var content = await response.Content.ReadFromJsonAsync<JsonNode>();
+        content.ShouldNotBeNull();
+        content["products"].ShouldNotBeNull();
+
+        var products = content["products"]!.AsArray();
+
+        // Assert
+        products.ShouldNotBeNull();
+        products[0]?["name"]?.GetValue<string>().ShouldBe($"{testId}_{expectedFirstProductName}");
+        products[1]?["name"]?.GetValue<string>().ShouldBe($"{testId}_{expectedSecondProductName}");
+        products[2]?["name"]?.GetValue<string>().ShouldBe($"{testId}_{expectedThirdProductName}");
     }
 }

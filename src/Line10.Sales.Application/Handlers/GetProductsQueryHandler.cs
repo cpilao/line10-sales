@@ -1,4 +1,7 @@
+using System.Linq.Expressions;
 using Line10.Sales.Application.Queries;
+using Line10.Sales.Core.Extensions;
+using Line10.Sales.Domain.Entities;
 using Line10.Sales.Domain.Persistence;
 using MediatR;
 
@@ -17,9 +20,18 @@ public class GetProductsQueryHandler: IRequestHandler<GetProductsRequest, GetPro
         GetProductsRequest request,
         CancellationToken cancellationToken)
     {
+        Expression<Func<Product, bool>> filter = o => true;
+
+        if (!string.IsNullOrEmpty(request.Name))
+        {
+            filter = filter.And(o => o.Name.Contains(request.Name));
+        }
+        
         var products = await _productRepository.GetPage(
             request.PageNumber, 
             request.PageSize,
+            filter: filter,
+            sortInfo: request.SortInfo,
             cancellationToken: cancellationToken);
 
         return new GetProductsResponse

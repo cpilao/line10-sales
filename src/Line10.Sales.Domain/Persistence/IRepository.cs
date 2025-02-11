@@ -14,5 +14,6 @@ public interface IRepository<TEntity>
         int pageNumber,
         int pageSize,
         Expression<Func<TEntity, bool>>? filter = null,
+        SortInfo<TEntity>? sortInfo = null,
         CancellationToken cancellationToken = default);
 }

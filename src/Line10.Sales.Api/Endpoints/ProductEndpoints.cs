@@ -1,5 +1,9 @@
 using Line10.Sales.Application.Commands;
 using Line10.Sales.Application.Queries;
+using Line10.Sales.Core;
+using Line10.Sales.Domain.Entities;
+using Line10.Sales.Domain.Extensions;
+using Line10.Sales.Domain.Persistence;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,11 +15,16 @@ public static class ProductEndpoints
     {
         endpointRouteBuilder.MapGet("/products", async (
                 [FromServices] IMediator mediator, 
+                [FromQuery] string? orderBy,
+                [FromQuery] SortOrder? order,
+                [FromQuery] string? name,
                 [FromQuery] int pageNumber = 1, 
                 [FromQuery] int pageSize = 10) =>
             {
                 var response = await mediator.Send(new GetProductsRequest
                 {
+                    SortInfo = orderBy.GetSortInfo<Product>(order),
+                    Name = name,
                     PageNumber = pageNumber,
                     PageSize = pageSize
                 });
