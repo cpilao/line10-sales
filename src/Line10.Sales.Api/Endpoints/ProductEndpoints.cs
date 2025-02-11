@@ -18,6 +18,8 @@ public static class ProductEndpoints
                 [FromQuery] string? orderBy,
                 [FromQuery] SortOrder? order,
                 [FromQuery] string? name,
+                [FromQuery] string? description,
+                [FromQuery] string? sku,
                 [FromQuery] int pageNumber = 1, 
                 [FromQuery] int pageSize = 10) =>
             {
@@ -25,6 +27,8 @@ public static class ProductEndpoints
                 {
                     SortInfo = orderBy.GetSortInfo<Product>(order),
                     Name = name,
+                    Description = description,
+                    Sku = sku,
                     PageNumber = pageNumber,
                     PageSize = pageSize
                 });

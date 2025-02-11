@@ -214,4 +214,36 @@ public class ProductApiIntegrationTests: BaseApiIntegrationTest
         products[1]?["name"]?.GetValue<string>().ShouldBe($"{testId}_{expectedSecondProductName}");
         products[2]?["name"]?.GetValue<string>().ShouldBe($"{testId}_{expectedThirdProductName}");
     }
+    
+    [Theory]
+    [InlineData("Name", "product_a", 1)]
+    [InlineData("Name", "product_", 3)]
+    [InlineData("Description", "some description_x", 2)]
+    [InlineData("Description", "some description_x2", 1)]
+    public async Task GetProducts_ShouldReturnFilteredProducts(
+        string filterName,
+        string filterValue,
+        int expectedResultsCount)
+    {
+        // Arrange
+        var url = "/products";
+        var testId = Guid.NewGuid().ToString();
+        
+        await _client.CreateProduct($"{testId}_product_a", $"{testId}_some description b", "SK0001");
+        await _client.CreateProduct($"{testId}_product_b", $"{testId}_some description_x1 a", "SK0003");
+        await _client.CreateProduct($"{testId}_product_c", $"{testId}_some description_x2 c", "SK0002");
+        
+        // Act
+        var response = await _client.GetAsync($"{url}?{filterName}={testId}_{filterValue}");
+        response.EnsureSuccessStatusCode();
+
+        // Assert
+        var content = await response.Content.ReadFromJsonAsync<JsonNode>();
+        content.ShouldNotBeNull();
+        content["products"].ShouldNotBeNull();
+
+        var products = content["products"]!.AsArray();
+        products.ShouldNotBeNull();
+        products.Count.ShouldBe(expectedResultsCount);
+    }
 }

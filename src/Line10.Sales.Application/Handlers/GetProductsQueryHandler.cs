@@ -27,6 +27,16 @@ public class GetProductsQueryHandler: IRequestHandler<GetProductsRequest, GetPro
             filter = filter.And(o => o.Name.Contains(request.Name));
         }
         
+        if (!string.IsNullOrEmpty(request.Description))
+        {
+            filter = filter.And(o => o.Description.Contains(request.Description));
+        }
+        
+        if (!string.IsNullOrEmpty(request.Sku))
+        {
+            filter = filter.And(o => o.Sku.Contains(request.Sku));
+        }
+        
         var products = await _productRepository.GetPage(
             request.PageNumber, 
             request.PageSize,
