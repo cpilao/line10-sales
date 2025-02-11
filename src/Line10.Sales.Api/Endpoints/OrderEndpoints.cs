@@ -1,5 +1,8 @@
 using Line10.Sales.Application.Commands;
 using Line10.Sales.Application.Queries;
+using Line10.Sales.Domain.Entities;
+using Line10.Sales.Domain.Extensions;
+using Line10.Sales.Domain.Persistence;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,6 +12,30 @@ public static class OrderEndpoints
 {
     public static IEndpointRouteBuilder AddOrderEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
     {
+        endpointRouteBuilder.MapGet("/orders", async (
+                [FromServices] IMediator mediator,
+                [FromQuery] string? orderBy,
+                [FromQuery] SortOrder? order,
+                [FromQuery] Guid? customerId,
+                [FromQuery] OrderStatus? status,
+                [FromQuery] int pageNumber = 1, 
+                [FromQuery] int pageSize = 10) =>
+            {
+                var response = await mediator.Send(new GetOrdersRequest()
+                {
+                    SortInfo = orderBy.GetSortInfo<Order>(order),
+                    CustomerId = customerId,
+                    Status = status,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                });
+                return response.IsSuccess ? 
+                    Results.Json(new {response.Orders}) : 
+                    Results.BadRequest(response.Errors);
+            })
+            .WithName("GetOrders")
+            .WithOpenApi();
+        
         endpointRouteBuilder.MapPost("/orders/{id:guid}/products", async (
                 [FromServices] IMediator mediator,
                 [FromRoute] Guid id,

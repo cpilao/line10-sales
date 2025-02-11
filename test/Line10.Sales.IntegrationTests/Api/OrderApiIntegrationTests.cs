@@ -256,4 +256,49 @@ public class OrderApiIntegrationTests: BaseApiIntegrationTest
         orderProducts.Count.ShouldBe(2);
         orderProducts.Sum(node => node?["quantity"]?.GetValue<int>()).ShouldBe(6);
     }
+    
+    [Fact]
+    public async Task GetOrders_ShouldReturnSuccess()
+    {
+        // Arrange
+        var url = "/orders";
+        
+        // create orders
+        var orderInfo1 = await _client.CreateFullOrder();
+        
+        var orderInfo2 = await _client.CreateFullOrder();
+        
+        var orderInfo3 = await _client.CreateFullOrder();
+
+        var response = await _client.PostAsJsonAsync($"{url}/{orderInfo3.OrderId}/process", new { });
+        response.EnsureSuccessStatusCode();
+
+        // Act
+        response = await _client.GetAsync($"{url}?customerId={orderInfo1.CustomerId}");
+        response.EnsureSuccessStatusCode();
+        
+        // Assert
+        var content = await response.Content.ReadFromJsonAsync<JsonNode>();
+        content.ShouldNotBeNull();
+        content["orders"].ShouldNotBeNull();
+        var orders = content["orders"]!.AsArray();
+        orders.Count.ShouldBe(1);
+        orders[0]?["customerId"]?.ToString().ShouldBe(orderInfo1.CustomerId.ToString());
+        orders[0]?["orderId"]?.ToString().ShouldBe(orderInfo1.OrderId.ToString());
+        orders[0]?["status"]?.ToString().ShouldBe("Pending");
+        
+        response = await _client.GetAsync($"{url}?status=Pending");
+        response.EnsureSuccessStatusCode();
+        content = await response.Content.ReadFromJsonAsync<JsonNode>();
+        content.ShouldNotBeNull();
+        content["orders"].ShouldNotBeNull();
+        orders = content["orders"]!.AsArray();
+        orders.Count.ShouldBe(2);
+        orders[0]?["customerId"]?.ToString().ShouldBe(orderInfo1.CustomerId.ToString());
+        orders[0]?["orderId"]?.ToString().ShouldBe(orderInfo1.OrderId.ToString());
+        orders[0]?["status"]?.ToString().ShouldBe("Pending");
+        orders[1]?["customerId"]?.ToString().ShouldBe(orderInfo2.CustomerId.ToString());
+        orders[1]?["orderId"]?.ToString().ShouldBe(orderInfo2.OrderId.ToString());
+        orders[1]?["status"]?.ToString().ShouldBe("Pending");
+    }
 }
