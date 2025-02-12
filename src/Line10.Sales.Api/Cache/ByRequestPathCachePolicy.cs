@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.OutputCaching;
 
 namespace Line10.Sales.Api.Cache;
 
-public sealed class ByIdCachePolicy : BaseCachePolicy
+public sealed class ByRequestPathCachePolicy : BaseCachePolicy
 {
+    /// <inheritdoc />
     public override ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
-        var id = context.HttpContext.Request.RouteValues["id"];
-        if (id is null)
+        var requestPath = context.HttpContext.Request.Path.ToString();
+        if (string.IsNullOrEmpty(requestPath))
             return ValueTask.CompletedTask;
 
-        context.Tags.Add(id.ToString()!);
+        context.Tags.Add(requestPath);
 
         var attemptOutputCaching = AttemptOutputCaching(context);
         context.EnableOutputCaching = true;

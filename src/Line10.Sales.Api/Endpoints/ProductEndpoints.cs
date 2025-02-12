@@ -5,6 +5,7 @@ using Line10.Sales.Domain.Extensions;
 using Line10.Sales.Domain.Persistence;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace Line10.Sales.Api.Endpoints;
 
@@ -23,6 +24,7 @@ public static class ProductEndpoints
                 [FromQuery] string? name,
                 [FromQuery] string? description,
                 [FromQuery] string? sku,
+                CancellationToken cancellationToken,
                 [FromQuery] int pageNumber = 1, 
                 [FromQuery] int pageSize = 10) =>
             {
@@ -34,19 +36,24 @@ public static class ProductEndpoints
                     Sku = sku,
                     PageNumber = pageNumber,
                     PageSize = pageSize
-                });
+                }, cancellationToken);
                 return response.IsSuccess ? 
                     Results.Json(new {response.Products}) : 
                     Results.BadRequest(response.Errors);
             })
             .WithName("GetProducts")
-            .WithOpenApi();
+            .WithOpenApi()
+            .CacheOutput(o => o
+                .Tag("products")
+                .SetVaryByQuery("*")
+                .Expire(TimeSpan.FromMinutes(10)));
         
         productsApi.MapPost(string.Empty, async (
                 [FromServices] IMediator mediator, 
-                [FromBody] CreateProductRequest request) =>
+                [FromBody] CreateProductRequest request,
+                CancellationToken cancellationToken) =>
             {
-                var response = await mediator.Send(request);
+                var response = await mediator.Send(request, cancellationToken);
                 return response.IsSuccess ? 
                     Results.Json(new {response.ProductId}) : 
                     Results.BadRequest(response.Errors);
@@ -56,25 +63,36 @@ public static class ProductEndpoints
         
         productsApi.MapPut("/{id:guid}", async (
                 [FromServices] IMediator mediator,
+                [FromServices] IOutputCacheStore cacheStore,
                 [FromRoute] Guid id,
-                [FromBody] UpdateProductRequest request) =>
+                [FromBody] UpdateProductRequest request,
+                CancellationToken cancellationToken) =>
             {
-                var response = await mediator.Send(request with {ProductId = id});
-                return response.IsSuccess ? 
-                    Results.NoContent() : 
-                    Results.BadRequest(response.Errors);
+                var response = await mediator.Send(request with {ProductId = id}, cancellationToken);
+                if (response.IsSuccess)
+                {
+                    // Invalidate the cache for the specific product ID
+                    var cacheKey = id.ToString();
+                    await cacheStore.EvictByTagAsync(cacheKey, cancellationToken);
+                    
+                    // Invalidate the cache products tag
+                    await cacheStore.EvictByTagAsync("products", cancellationToken);
+                    return Results.NoContent();
+                }
+                return Results.BadRequest(response.Errors);
             })
             .WithName("UpdateProduct")
             .WithOpenApi();
 
-        productsApi.MapGet("/{id:guid}", async (
+        productsApi.MapGet("/{id:guid}", [OutputCache(PolicyName = "ByIdCachePolicy")] async (
                 [FromServices] IMediator mediator, 
-                [FromRoute] Guid id) =>
+                [FromRoute] Guid id,
+                CancellationToken cancellationToken) =>
             {
                 var response = await mediator.Send(new GetProductRequest
                 {
                     ProductId = id
-                });
+                }, cancellationToken);
                 return response.IsSuccess ? 
                     Results.Json(new
                     {
@@ -88,16 +106,26 @@ public static class ProductEndpoints
             .WithOpenApi();
         
         productsApi.MapDelete("/{id:guid}", async (
-                [FromServices] IMediator mediator, 
-                [FromRoute] Guid id) =>
+                [FromServices] IMediator mediator,
+                [FromServices] IOutputCacheStore cacheStore,
+                [FromRoute] Guid id,
+                CancellationToken cancellationToken) =>
             {
                 var response = await mediator.Send(new DeleteProductRequest
                 {
                     ProductId = id
-                });
-                return response.IsSuccess ? 
-                    Results.NoContent() : 
-                    Results.BadRequest(response.Errors);
+                }, cancellationToken);
+                if (response.IsSuccess)
+                {
+                    // Invalidate the cache for the specific product ID
+                    var cacheKey = id.ToString();
+                    await cacheStore.EvictByTagAsync(cacheKey, cancellationToken);
+                    
+                    // Invalidate the cache products tag
+                    await cacheStore.EvictByTagAsync("products", cancellationToken);
+                    return Results.NoContent();
+                }
+                return Results.BadRequest(response.Errors);
             })
             .WithName("DeleteProduct")
             .WithOpenApi();

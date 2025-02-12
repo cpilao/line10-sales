@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Line10.Sales.Api.BackgroundServices;
+using Line10.Sales.Api.Cache;
 using Line10.Sales.Api.Endpoints;
 using Line10.Sales.Api.Swagger;
 using Line10.Sales.Domain.Persistence;
@@ -37,6 +38,18 @@ builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
+// Add output caching services
+builder.Services.AddOutputCache(o =>
+{
+    o.AddPolicy("ByIdCachePolicy", policy => policy
+        .AddPolicy<ByIdCachePolicy>()
+        .Expire(TimeSpan.FromMinutes(10)));
+    
+    o.AddPolicy("ByRequestPathCachePolicy", policy => policy
+        .AddPolicy<ByRequestPathCachePolicy>()
+        .Expire(TimeSpan.FromMinutes(10)));
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -47,6 +60,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Add the output caching middleware
+app.UseOutputCache();
 
 // Api endpoints
 app.AddCustomerEndpoints();
