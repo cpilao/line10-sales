@@ -1,5 +1,7 @@
+using Line10.Sales.Infrastructure;
 using Line10.Sales.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
@@ -31,6 +33,13 @@ public class IntegrationApiTestFixture :
     {
         DataContainer = new PostgreSqlContainerWrapper();
         await DataContainer.StartAsync();
+        
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseNpgsql(DataContainer.GetConnectionString())
+            .Options;
+
+        var dbContext = new ApplicationDbContext(options);
+        await dbContext.Database.MigrateAsync();
     }
 
     public new Task DisposeAsync()

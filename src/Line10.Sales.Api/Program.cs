@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Line10.Sales.Api.BackgroundServices;
 using Line10.Sales.Api.Endpoints;
+using Line10.Sales.Api.Swagger;
 using Line10.Sales.Domain.Persistence;
 using Line10.Sales.Infrastructure;
 using Line10.Sales.Infrastructure.Repositories;
@@ -11,7 +12,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SchemaFilter<EnumSchemaFilter>();
+});
 
 // json settings
 builder.Services.ConfigureHttpJsonOptions(options =>

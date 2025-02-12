@@ -1,6 +1,5 @@
 using Line10.Sales.Application.Commands;
 using Line10.Sales.Application.Queries;
-using Line10.Sales.Core;
 using Line10.Sales.Domain.Entities;
 using Line10.Sales.Domain.Extensions;
 using Line10.Sales.Domain.Persistence;
@@ -13,7 +12,11 @@ public static class ProductEndpoints
 {
     public static IEndpointRouteBuilder AddProductEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
     {
-        endpointRouteBuilder.MapGet("/products", async (
+        var productsApi = endpointRouteBuilder
+            .MapGroup("/products")
+            .WithTags("Products");
+        
+        productsApi.MapGet(string.Empty, async (
                 [FromServices] IMediator mediator, 
                 [FromQuery] string? orderBy,
                 [FromQuery] SortOrder? order,
@@ -39,7 +42,7 @@ public static class ProductEndpoints
             .WithName("GetProducts")
             .WithOpenApi();
         
-        endpointRouteBuilder.MapPost("/products", async (
+        productsApi.MapPost(string.Empty, async (
                 [FromServices] IMediator mediator, 
                 [FromBody] CreateProductRequest request) =>
             {
@@ -51,7 +54,7 @@ public static class ProductEndpoints
             .WithName("CreateProduct")
             .WithOpenApi();
         
-        endpointRouteBuilder.MapPut("/products/{id:guid}", async (
+        productsApi.MapPut("/{id:guid}", async (
                 [FromServices] IMediator mediator,
                 [FromRoute] Guid id,
                 [FromBody] UpdateProductRequest request) =>
@@ -64,7 +67,7 @@ public static class ProductEndpoints
             .WithName("UpdateProduct")
             .WithOpenApi();
 
-        endpointRouteBuilder.MapGet("/products/{id:guid}", async (
+        productsApi.MapGet("/{id:guid}", async (
                 [FromServices] IMediator mediator, 
                 [FromRoute] Guid id) =>
             {
@@ -84,7 +87,7 @@ public static class ProductEndpoints
             .WithName("GetProductById")
             .WithOpenApi();
         
-        endpointRouteBuilder.MapDelete("/products/{id:guid}", async (
+        productsApi.MapDelete("/{id:guid}", async (
                 [FromServices] IMediator mediator, 
                 [FromRoute] Guid id) =>
             {

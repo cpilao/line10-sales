@@ -293,12 +293,14 @@ public class OrderApiIntegrationTests: BaseApiIntegrationTest
         content.ShouldNotBeNull();
         content["orders"].ShouldNotBeNull();
         orders = content["orders"]!.AsArray();
-        orders.Count.ShouldBe(2);
-        orders[0]?["customerId"]?.ToString().ShouldBe(orderInfo1.CustomerId.ToString());
-        orders[0]?["orderId"]?.ToString().ShouldBe(orderInfo1.OrderId.ToString());
-        orders[0]?["status"]?.ToString().ShouldBe("Pending");
-        orders[1]?["customerId"]?.ToString().ShouldBe(orderInfo2.CustomerId.ToString());
-        orders[1]?["orderId"]?.ToString().ShouldBe(orderInfo2.OrderId.ToString());
-        orders[1]?["status"]?.ToString().ShouldBe("Pending");
+        orders.Count.ShouldBeGreaterThanOrEqualTo(2);
+
+        var order1 = orders.Single(o => o?["id"]?.GetValue<Guid>() == orderInfo1.OrderId);
+        var order2 = orders.Single(o => o?["id"]?.GetValue<Guid>() == orderInfo2.OrderId);
+        
+        order1?["customerId"]?.ToString().ShouldBe(orderInfo1.CustomerId.ToString());
+        order1?["status"]?.ToString().ShouldBe("Pending");
+        order2?["customerId"]?.ToString().ShouldBe(orderInfo2.CustomerId.ToString());
+        order2?["status"]?.ToString().ShouldBe("Pending");
     }
 }

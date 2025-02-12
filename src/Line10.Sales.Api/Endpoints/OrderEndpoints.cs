@@ -12,7 +12,11 @@ public static class OrderEndpoints
 {
     public static IEndpointRouteBuilder AddOrderEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
     {
-        endpointRouteBuilder.MapGet("/orders", async (
+        var ordersApi = endpointRouteBuilder
+            .MapGroup("/orders")
+            .WithTags("Orders");
+        
+        ordersApi.MapGet(string.Empty, async (
                 [FromServices] IMediator mediator,
                 [FromQuery] string? orderBy,
                 [FromQuery] SortOrder? order,
@@ -36,7 +40,7 @@ public static class OrderEndpoints
             .WithName("GetOrders")
             .WithOpenApi();
         
-        endpointRouteBuilder.MapPost("/orders/{id:guid}/products", async (
+        ordersApi.MapPost("/{id:guid}/products", async (
                 [FromServices] IMediator mediator,
                 [FromRoute] Guid id,
                 [FromBody] AddOrderProductRequest request) =>
@@ -46,7 +50,7 @@ public static class OrderEndpoints
             })
             .WithName("AddOrderProduct");
             
-        endpointRouteBuilder.MapDelete("/orders/{id:guid}/products", async (
+        ordersApi.MapDelete("/{id:guid}/products", async (
                 [FromServices] IMediator mediator,
                 [FromRoute] Guid id,
                 [FromBody] RemoveOrderProductRequest request) =>
@@ -56,7 +60,7 @@ public static class OrderEndpoints
             })
             .WithName("RemoveOrderProduct");
         
-        endpointRouteBuilder.MapGet("/orders/{id:guid}/products", async (
+        ordersApi.MapGet("/{id:guid}/products", async (
                 [FromServices] IMediator mediator,
                 [FromRoute] Guid id) =>
             {
@@ -64,9 +68,9 @@ public static class OrderEndpoints
                 return response.IsSuccess ? Results.Json(response.OrderProducts) : Results.BadRequest(response.Errors);
             })
             .WithName("GetOrderProducts")
-            
             .WithOpenApi();
-        endpointRouteBuilder.MapPost("/orders", async (
+        
+        ordersApi.MapPost(string.Empty, async (
                 [FromServices] IMediator mediator, 
                 [FromBody] CreateOrderRequest request) =>
             {
@@ -78,7 +82,7 @@ public static class OrderEndpoints
             .WithName("CreateOrder")
             .WithOpenApi();
         
-        endpointRouteBuilder.MapPost("/orders/{id:guid}/process", async (
+        ordersApi.MapPost("/{id:guid}/process", async (
                 [FromServices] IMediator mediator,
                 [FromRoute] Guid id) =>
             {
@@ -90,7 +94,7 @@ public static class OrderEndpoints
             .WithName("ProcessOrder")
             .WithOpenApi();
         
-        endpointRouteBuilder.MapPost("/orders/{id:guid}/ship", async (
+        ordersApi.MapPost("/{id:guid}/ship", async (
                 [FromServices] IMediator mediator,
                 [FromRoute] Guid id) =>
             {
@@ -102,7 +106,7 @@ public static class OrderEndpoints
             .WithName("ShipOrder")
             .WithOpenApi();
         
-        endpointRouteBuilder.MapPost("/orders/{id:guid}/delivery", async (
+        ordersApi.MapPost("/{id:guid}/delivery", async (
                 [FromServices] IMediator mediator,
                 [FromRoute] Guid id) =>
             {
@@ -114,7 +118,7 @@ public static class OrderEndpoints
             .WithName("DeliveryOrder")
             .WithOpenApi();
         
-        endpointRouteBuilder.MapPost("/orders/{id:guid}/cancel", async (
+        ordersApi.MapPost("/{id:guid}/cancel", async (
                 [FromServices] IMediator mediator,
                 [FromRoute] Guid id) =>
             {
@@ -126,7 +130,7 @@ public static class OrderEndpoints
             .WithName("CancelOrder")
             .WithOpenApi();
 
-        endpointRouteBuilder.MapGet("/orders/{id:guid}", async (
+        ordersApi.MapGet("/{id:guid}", async (
                 [FromServices] IMediator mediator, 
                 [FromRoute] Guid id) =>
             {
@@ -147,7 +151,7 @@ public static class OrderEndpoints
             .WithName("GetOrderById")
             .WithOpenApi();
         
-        endpointRouteBuilder.MapDelete("/orders/{id:guid}", async (
+        ordersApi.MapDelete("/{id:guid}", async (
                 [FromServices] IMediator mediator, 
                 [FromRoute] Guid id) =>
             {

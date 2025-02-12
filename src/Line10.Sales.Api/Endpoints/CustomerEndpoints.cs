@@ -12,7 +12,11 @@ public static class CustomerEndpoints
 {
     public static IEndpointRouteBuilder AddCustomerEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
     {
-        endpointRouteBuilder.MapGet("/customers", async (
+        var customersApi = endpointRouteBuilder
+            .MapGroup("/customers")
+            .WithTags("Customers");
+        
+        customersApi.MapGet(string.Empty, async (
                 [FromServices] IMediator mediator,
                 [FromQuery] string? orderBy,
                 [FromQuery] SortOrder? order,
@@ -36,7 +40,7 @@ public static class CustomerEndpoints
             .WithName("GetCustomers")
             .WithOpenApi();
         
-        endpointRouteBuilder.MapPost("/customers", async (
+        customersApi.MapPost(string.Empty, async (
                 [FromServices] IMediator mediator, 
                 [FromBody] CreateCustomerRequest request) =>
             {
@@ -48,7 +52,7 @@ public static class CustomerEndpoints
             .WithName("CreateCustomer")
             .WithOpenApi();
         
-        endpointRouteBuilder.MapPut("/customers/{id:guid}", async (
+        customersApi.MapPut("/{id:guid}", async (
                 [FromServices] IMediator mediator,
                 [FromRoute] Guid id,
                 [FromBody] UpdateCustomerRequest request) =>
@@ -61,7 +65,7 @@ public static class CustomerEndpoints
             .WithName("UpdateCustomer")
             .WithOpenApi();
 
-        endpointRouteBuilder.MapGet("/customers/{id:guid}", async (
+        customersApi.MapGet("/{id:guid}", async (
                 [FromServices] IMediator mediator, 
                 [FromRoute] Guid id) =>
             {
@@ -82,7 +86,7 @@ public static class CustomerEndpoints
             .WithName("GetCustomerById")
             .WithOpenApi();
         
-        endpointRouteBuilder.MapDelete("/customers/{id:guid}", async (
+        customersApi.MapDelete("/{id:guid}", async (
                 [FromServices] IMediator mediator, 
                 [FromRoute] Guid id) =>
             {
