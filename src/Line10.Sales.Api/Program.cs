@@ -4,9 +4,12 @@ using Line10.Sales.Api.Cache;
 using Line10.Sales.Api.Endpoints;
 using Line10.Sales.Api.Security;
 using Line10.Sales.Api.Swagger;
+using Line10.Sales.Application;
+using Line10.Sales.Application.Behaviors;
 using Line10.Sales.Domain.Persistence;
 using Line10.Sales.Infrastructure;
 using Line10.Sales.Infrastructure.Repositories;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -60,7 +63,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 // Application
 builder.Services.AddMediatR(o =>
 {
-    o.RegisterServicesFromAssembly(typeof(Line10.Sales.Application.IAnchor).Assembly);
+    o.RegisterServicesFromAssembly(typeof(IAnchor).Assembly);
+    o.AddOpenBehavior(typeof(LoggingBehavior<,>));
 });
 
 // Infrastructure
