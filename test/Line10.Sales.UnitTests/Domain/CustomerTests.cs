@@ -1,4 +1,6 @@
 using Line10.Sales.Domain.Entities;
+using Line10.Sales.Domain.Exceptions;
+using Line10.Sales.Domain.ValueObjects;
 using Shouldly;
 
 namespace Line10.Sales.UnitTests.Domain;
@@ -63,7 +65,7 @@ public class CustomerTests
     }
 
     [Fact]
-    public void Create_ShouldReturnError_WhenEmailIsEmpty()
+    public void Create_ShouldRaiseInvalidEmailException_WhenEmailIsEmpty()
     {
         // Arrange
         var firstName = "John";
@@ -71,11 +73,7 @@ public class CustomerTests
         var email = string.Empty;
         var phone = "123-456-7890";
 
-        // Act
-        var result = Customer.Create(firstName, lastName, email, phone);
-
-        // Assert
-        result.IsSuccess.ShouldBeFalse();
-        result.Errors.ShouldContain(e => e.Message == "InvalidCustomerEmail");
+        // Act & Assert
+        Should.Throw<InvalidEmailException>(() => Customer.Create(firstName, lastName, email, phone));
     }
 }

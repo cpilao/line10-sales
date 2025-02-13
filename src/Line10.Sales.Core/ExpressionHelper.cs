@@ -6,25 +6,15 @@ public static class ExpressionHelper
 {
     public static Expression<Func<T, object>> GetExpression<T>(string fieldName)
     {
-        // Get the property info
-        var propertyInfo = typeof(T).GetProperty(fieldName);
-        if (propertyInfo == null)
+        var parameter = Expression.Parameter(typeof(T), "x");
+        Expression body = parameter;
+
+        foreach (var member in fieldName.Split('.'))
         {
-            throw new ArgumentException($"'{fieldName}' is not a valid property of type '{typeof(T).Name}'");
+            body = Expression.PropertyOrField(body, member);
         }
 
-        // Create the parameter expression
-        var parameter = Expression.Parameter(typeof(T), "o");
-
-        // Create the property expression
-        var property = Expression.Property(parameter, propertyInfo);
-
-        // Convert the property to object type
-        var convert = Expression.Convert(property, typeof(object));
-
-        // Create the lambda expression
-        var lambda = Expression.Lambda<Func<T, object>>(convert, parameter);
-
-        return lambda;
+        var convertedBody = Expression.Convert(body, typeof(object));
+        return Expression.Lambda<Func<T, object>>(convertedBody, parameter);
     }
 }

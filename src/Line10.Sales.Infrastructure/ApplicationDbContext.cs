@@ -22,8 +22,11 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Phone).HasMaxLength(15);
+            entity.OwnsOne(u => u.Email, email =>
+            {
+                email.Property(e => e.Address).IsRequired().HasMaxLength(100).HasColumnName("Email");
+            });
         });
 
         // Product configuration
@@ -34,6 +37,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
             entity.Property(e => e.Sku).IsRequired().HasMaxLength(50);
         });
+            
 
         // Order configuration
         modelBuilder.Entity<Order>(entity =>

@@ -3,6 +3,7 @@ using FluentValidation;
 using Line10.Sales.Api.BackgroundServices;
 using Line10.Sales.Api.Cache;
 using Line10.Sales.Api.Endpoints;
+using Line10.Sales.Api.JsonConverters;
 using Line10.Sales.Api.Security;
 using Line10.Sales.Api.Swagger;
 using Line10.Sales.Application;
@@ -59,6 +60,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    options.SerializerOptions.Converters.Add(new EmailJsonConverter());
 });
 
 // Application

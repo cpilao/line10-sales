@@ -188,8 +188,8 @@ public class CustomerApiIntegrationTests: BaseApiIntegrationTest
     [InlineData("FirstName", "Asc", "customer_a", "customer_b", "customer_c")]
     [InlineData("LastName", "Desc", "customer_c", "customer_a", "customer_b")]
     [InlineData("LastName", "Asc", "customer_b", "customer_a", "customer_c")]
-    [InlineData("Email", "Asc", "customer_a", "customer_b", "customer_c")]
-    [InlineData("Email", "Desc", "customer_c", "customer_b", "customer_a")]
+    [InlineData("Email.Address", "Asc", "customer_a", "customer_b", "customer_c")]
+    [InlineData("Email.Address", "Desc", "customer_c", "customer_b", "customer_a")]
     [InlineData("Phone", "Asc", "customer_a", "customer_b", "customer_c")]
     [InlineData("Phone", "Desc", "customer_c", "customer_b", "customer_a")]
     public async Task GetCustomers_ShouldReturnOrderedCustomers(
