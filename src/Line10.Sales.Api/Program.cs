@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using FluentValidation;
 using Line10.Sales.Api.BackgroundServices;
 using Line10.Sales.Api.Cache;
 using Line10.Sales.Api.Endpoints;
@@ -65,7 +66,10 @@ builder.Services.AddMediatR(o =>
 {
     o.RegisterServicesFromAssembly(typeof(IAnchor).Assembly);
     o.AddOpenBehavior(typeof(LoggingBehavior<,>));
+    o.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
+// Application validators
+builder.Services.AddValidatorsFromAssemblyContaining<IAnchor>();
 
 // Infrastructure
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

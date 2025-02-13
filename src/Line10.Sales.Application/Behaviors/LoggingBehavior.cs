@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using ValidationException = System.ComponentModel.DataAnnotations.ValidationException;
 
 namespace Line10.Sales.Application.Behaviors;
 
