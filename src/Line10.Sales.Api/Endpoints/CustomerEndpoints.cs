@@ -1,3 +1,4 @@
+using Line10.Sales.Api.Security;
 using Line10.Sales.Application.Commands;
 using Line10.Sales.Application.Queries;
 using Line10.Sales.Domain.Entities;
@@ -16,7 +17,7 @@ public static class CustomerEndpoints
         var customersApi = endpointRouteBuilder
             .MapGroup("/customers")
             .WithTags("Customers");
-        
+
         customersApi.MapGet(string.Empty, async (
                 [FromServices] IMediator mediator,
                 [FromQuery] string? orderBy,
@@ -24,7 +25,7 @@ public static class CustomerEndpoints
                 [FromQuery] string? firstName,
                 [FromQuery] string? lastName,
                 CancellationToken cancellationToken,
-                [FromQuery] int pageNumber = 1, 
+                [FromQuery] int pageNumber = 1,
                 [FromQuery] int pageSize = 10) =>
             {
                 var response = await mediator.Send(new GetCustomersRequest
@@ -35,17 +36,19 @@ public static class CustomerEndpoints
                     PageNumber = pageNumber,
                     PageSize = pageSize
                 }, cancellationToken);
-                return response.IsSuccess ? 
-                    Results.Json(new {response.Customers}) : 
-                    Results.BadRequest(response.Errors);
+                return response.IsSuccess
+                    ? Results.Json(new {response.Customers})
+                    : Results.BadRequest(response.Errors);
             })
             .WithName("GetCustomers")
             .WithOpenApi()
             .CacheOutput(o => o
                 .Tag("customers")
                 .SetVaryByQuery("*")
-                .Expire(TimeSpan.FromMinutes(10)));
-        
+                .Expire(TimeSpan.FromMinutes(10)))
+            .RequireAuthorization(o =>
+                o.RequireRole(PolicyNames.CustomersRead.Role));
+
         customersApi.MapPost(string.Empty, async (
                 [FromServices] IMediator mediator,
                 [FromServices] IOutputCacheStore cacheStore,
@@ -59,12 +62,14 @@ public static class CustomerEndpoints
                     await cacheStore.EvictByTagAsync("customers", cancellationToken);
                     return Results.Json(new {response.CustomerId});
                 }
-                
+
                 return Results.BadRequest(response.Errors);
             })
             .WithName("CreateCustomer")
-            .WithOpenApi();
-        
+            .WithOpenApi()
+            .RequireAuthorization(o =>
+                o.RequireRole(PolicyNames.CustomersWrite.Role));
+
         customersApi.MapPut("/{id:guid}", async (
                 [FromServices] IMediator mediator,
                 [FromServices] IOutputCacheStore cacheStore,
@@ -78,7 +83,7 @@ public static class CustomerEndpoints
                     // Invalidate the cache for the specific customer ID
                     var cacheKey = id.ToString();
                     await cacheStore.EvictByTagAsync(cacheKey, cancellationToken);
-                    
+
                     // Invalidate the cache customers tag
                     await cacheStore.EvictByTagAsync("customers", cancellationToken);
                     return Results.NoContent();
@@ -87,7 +92,9 @@ public static class CustomerEndpoints
                 return Results.BadRequest(response.Errors);
             })
             .WithName("UpdateCustomer")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(o =>
+                o.RequireRole(PolicyNames.CustomersWrite.Role));
 
         customersApi.MapGet("/{id:guid}", [OutputCache(PolicyName = "ByIdCachePolicy")] async (
                 [FromServices] IMediator mediator,
@@ -109,10 +116,12 @@ public static class CustomerEndpoints
                     : Results.BadRequest(response.Errors);
             })
             .WithName("GetCustomerById")
-            .WithOpenApi();
-        
+            .WithOpenApi()
+            .RequireAuthorization(o =>
+                o.RequireRole(PolicyNames.CustomersRead.Role));
+
         customersApi.MapDelete("/{id:guid}", async (
-                [FromServices] IMediator mediator, 
+                [FromServices] IMediator mediator,
                 [FromRoute] Guid id,
                 [FromServices] IOutputCacheStore cacheStore,
                 CancellationToken cancellationToken) =>
@@ -121,22 +130,24 @@ public static class CustomerEndpoints
                 {
                     CustomerId = id
                 }, cancellationToken);
-                
+
                 if (response.IsSuccess)
                 {
                     // Invalidate the cache for the specific customer ID
                     var cacheKey = id.ToString();
                     await cacheStore.EvictByTagAsync(cacheKey, cancellationToken);
-                    
+
                     // Invalidate the cache customers tag
                     await cacheStore.EvictByTagAsync("customers", cancellationToken);
                     return Results.NoContent();
                 }
-                
+
                 return Results.BadRequest(response.Errors);
             })
             .WithName("DeleteCustomer")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(o =>
+                o.RequireRole(PolicyNames.CustomersWrite.Role));
 
         return endpointRouteBuilder;
     }

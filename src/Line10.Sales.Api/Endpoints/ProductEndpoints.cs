@@ -1,3 +1,4 @@
+using Line10.Sales.Api.Security;
 using Line10.Sales.Application.Commands;
 using Line10.Sales.Application.Queries;
 using Line10.Sales.Domain.Entities;
@@ -46,7 +47,9 @@ public static class ProductEndpoints
             .CacheOutput(o => o
                 .Tag("products")
                 .SetVaryByQuery("*")
-                .Expire(TimeSpan.FromMinutes(10)));
+                .Expire(TimeSpan.FromMinutes(10)))
+            .RequireAuthorization(o =>
+                o.RequireRole(PolicyNames.ProductsRead.Role));
         
         productsApi.MapPost(string.Empty, async (
                 [FromServices] IMediator mediator, 
@@ -59,7 +62,9 @@ public static class ProductEndpoints
                     Results.BadRequest(response.Errors);
             })
             .WithName("CreateProduct")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(o =>
+                o.RequireRole(PolicyNames.ProductsWrite.Role));
         
         productsApi.MapPut("/{id:guid}", async (
                 [FromServices] IMediator mediator,
@@ -82,7 +87,9 @@ public static class ProductEndpoints
                 return Results.BadRequest(response.Errors);
             })
             .WithName("UpdateProduct")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(o =>
+                o.RequireRole(PolicyNames.ProductsWrite.Role));
 
         productsApi.MapGet("/{id:guid}", [OutputCache(PolicyName = "ByIdCachePolicy")] async (
                 [FromServices] IMediator mediator, 
@@ -103,7 +110,9 @@ public static class ProductEndpoints
                     Results.BadRequest(response.Errors);
             })
             .WithName("GetProductById")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(o =>
+                o.RequireRole(PolicyNames.ProductsRead.Role));
         
         productsApi.MapDelete("/{id:guid}", async (
                 [FromServices] IMediator mediator,
@@ -128,7 +137,9 @@ public static class ProductEndpoints
                 return Results.BadRequest(response.Errors);
             })
             .WithName("DeleteProduct")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(o =>
+                o.RequireRole(PolicyNames.ProductsWrite.Role));
 
         return endpointRouteBuilder;
     }

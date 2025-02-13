@@ -2,13 +2,21 @@ using System.Text.Json.Serialization;
 using Line10.Sales.Api.BackgroundServices;
 using Line10.Sales.Api.Cache;
 using Line10.Sales.Api.Endpoints;
+using Line10.Sales.Api.Security;
 using Line10.Sales.Api.Swagger;
 using Line10.Sales.Domain.Persistence;
 using Line10.Sales.Infrastructure;
 using Line10.Sales.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// log services
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -16,6 +24,31 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SchemaFilter<EnumSchemaFilter>();
+    
+    // Add JWT Authentication
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter JWT with Bearer into field",
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
 });
 
 // json settings
@@ -50,7 +83,28 @@ builder.Services.AddOutputCache(o =>
         .Expire(TimeSpan.FromMinutes(10)));
 });
 
+// Security
+var tokenOptions = new TokenValidationOptions();
+builder.Configuration.GetSection("TokenValidation").Bind(tokenOptions);
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters();
+        options.Bind(tokenOptions);
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicies();
+});
+
 var app = builder.Build();
+
+// Security middleware
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

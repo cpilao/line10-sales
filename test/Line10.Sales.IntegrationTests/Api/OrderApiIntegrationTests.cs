@@ -1,6 +1,8 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
+using Line10.Sales.Core.Security;
 using Line10.Sales.IntegrationTests.Extensions;
 using Shouldly;
 
@@ -14,6 +16,15 @@ public class OrderApiIntegrationTests: BaseApiIntegrationTest
         : base(fixture)
     {
         _client = _fixture.CreateClient();
+        var token = JwtUtils.GetToken([
+            "orders.read",
+            "orders.write",
+            "customers.read",
+            "customers.write",
+            "products.read",
+            "products.write"
+        ]);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 
     [Fact]

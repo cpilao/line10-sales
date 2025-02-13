@@ -25,6 +25,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.dockerignore = .dockerignore
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{F5D715EA-4301-4BBA-9A6F-39EFA08404DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Line10.Sales.JwtGenerator", "tools\Line10.Sales.JwtGenerator\Line10.Sales.JwtGenerator.csproj", "{26628151-2899-4E04-B70D-0BA820F4A383}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +42,7 @@ Global
 		{FBFF8F1C-FA78-41FA-A637-0F1702EA80EF} = {459E67D4-0EAE-40DE-B0FC-7456DF18E934}
 		{4D1678FE-F7EB-436F-98BC-ADDD663D0C0A} = {459E67D4-0EAE-40DE-B0FC-7456DF18E934}
 		{B27C44A7-3853-479E-95D9-B851F488F595} = {ADFECAE4-E792-497F-B482-E7ED850F24AC}
+		{26628151-2899-4E04-B70D-0BA820F4A383} = {F5D715EA-4301-4BBA-9A6F-39EFA08404DC}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{45889983-FF1C-46EE-905F-6057C0559C43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -68,5 +73,9 @@ Global
 		{B27C44A7-3853-479E-95D9-B851F488F595}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B27C44A7-3853-479E-95D9-B851F488F595}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B27C44A7-3853-479E-95D9-B851F488F595}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26628151-2899-4E04-B70D-0BA820F4A383}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26628151-2899-4E04-B70D-0BA820F4A383}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26628151-2899-4E04-B70D-0BA820F4A383}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26628151-2899-4E04-B70D-0BA820F4A383}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
