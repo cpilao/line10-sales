@@ -109,6 +109,7 @@ This project follows Domain-Driven Design (DDD) principles to create a rich doma
 
 - **Entities**: Represent the core business objects with a unique identity.
 - **Repositories**: Provide methods to access and manipulate aggregate entities.
+- **Value Objects**: Represent an immutable type that represents a descriptive aspect of the domain, defined by its attributes and considered equal if all attributes are the same.
 
 ## Application Layer
 
