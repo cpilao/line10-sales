@@ -13,7 +13,7 @@ This project is a Web API implemented in .NET for managing orders, products, and
 
 ## Technologies Used
 
-- **.NET 6**
+- **.NET 8**
 - **Entity Framework Core**
 - **PostgreSQL**
 - **Swagger for API Documentation**
